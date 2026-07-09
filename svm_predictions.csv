@@ -1,0 +1,6 @@
+"Age","Gender","Education","Prediction"
+8,"Male",0,"Illiterate"
+15,"Female",1,"Literate"
+25,"Male",4,"Literate"
+45,"Female",5,"Literate"
+70,"Male",2,"Literate"

@@ -1,11 +1,10 @@
 read_sav("Sample.sav")
 
-
-# Different columns of new table through death.sav as death_comprehensive_table.sav
 library(haven)
 library(dplyr)
 
 Death <- read_sav("/mnt/user-data/uploads/Death.sav")
+
 
 # TABLE 1: Deaths by Year
 deaths_by_year <- Death %>%
@@ -14,6 +13,7 @@ deaths_by_year <- Death %>%
   mutate(Percentage = round(Count / sum(Count) * 100, 2)) %>%
   rename(Year = DEATH_YEAR)
 print(deaths_by_year)
+
 
 # TABLE 2: Deaths by Place
 deaths_by_place <- Death %>%
@@ -31,6 +31,8 @@ deaths_by_place <- Death %>%
   mutate(Percentage = round(Count / sum(Count) * 100, 2)) %>%
   arrange(desc(Count))
 print(deaths_by_place)
+
+
 
 # TABLE 3: Deaths by Gender
 deaths_by_gender <- Death %>%
@@ -323,20 +325,15 @@ pyramid_chart <- ggplot(pyramid_data_formatted,
     panel.grid.minor = element_blank()
   )
 
-# DISPLAY AND SAVE CHART
+
 print(pyramid_chart)
 ggsave("population_pyramid_percentage.png", pyramid_chart, width = 12, height = 10, dpi = 300)
 
-# SAVE DATA
 write_sav(pyramid_data, "pyramid_data_percentage.sav")
-
-# SUMMARY STATISTICS
 cat("\n========== PYRAMID SUMMARY ==========\n")
 cat("Total Population: ", pyramid_data$Total_Weighted[1], "\n\n")
-
 male_data <- pyramid_data %>% filter(Gender_Label == "Male")
 female_data <- pyramid_data %>% filter(Gender_Label == "Female")
-
 cat("Males: ", sum(male_data$Percentage), "%\n")
 cat("Females: ", sum(female_data$Percentage), "%\n")
 
@@ -344,49 +341,27 @@ cat("Females: ", sum(female_data$Percentage), "%\n")
 
 ##################
 #Pakistan Demographic Survey 2020
-
-#Graphs
-# ============================================================================
-# ADVANCED DEMOGRAPHIC ANALYSIS & VISUALIZATIONS
-# Complex relationships and cross-tabulations
-# ============================================================================
-# This script creates advanced visualizations including:
-# - Mosaic plots for categorical associations
-# - Faceted plots by demographic groups
-# - Custom demographic pyramids
-# - Correlation heatmaps
-# ============================================================================
-
 library(haven)
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
 library(gridExtra)
 
-# Set output directory
 output_dir <- '/mnt/user-data/outputs/'
 
-# Load all data
 birth <- read_sav('/mnt/user-data/uploads/Birth.sav')
 fertility <- read_sav('/mnt/user-data/uploads/Fertility.sav')
 roster <- read_sav('/mnt/user-data/uploads/Roster.sav')
 death <- read_sav('/mnt/user-data/uploads/Death.sav')
 
-# ============================================================================
 # ADVANCED ANALYSIS 1: AGE GROUP ANALYSIS
-# ============================================================================
-
 cat("\n========== ADVANCED AGE GROUP ANALYSIS ==========\n")
-
-# Create age groups from roster data and visualize
 if("ha2" %in% names(roster) || "age" %in% tolower(names(roster))) {
   
   age_col <- names(roster)[tolower(names(roster)) %in% c("age", "ha2")][1]
-  
   roster_age_groups <- roster %>%
     filter(!is.na(!!sym(age_col)), !!sym(age_col) >= 0, !!sym(age_col) < 150) %>%
     mutate(
-      # Create age groups for better analysis
       age_group = case_when(
         !!sym(age_col) < 5 ~ "0-4 years",
         !!sym(age_col) >= 5 & !!sym(age_col) < 15 ~ "5-14 years",
@@ -467,13 +442,10 @@ if("ha2" %in% names(roster) || "age" %in% tolower(names(roster))) {
   }
 }
 
-# ============================================================================
+
+
 # ADVANCED ANALYSIS 2: EDUCATION & DEMOGRAPHIC INTERACTION (if education data exists)
-# ============================================================================
-
 cat("\n========== EDUCATION ANALYSIS ==========\n")
-
-# Check for education variables
 education_var <- names(roster)[tolower(names(roster)) %in% c("education", "edu", "ha5")][1]
 if(!is.na(education_var)) {
   
@@ -504,13 +476,10 @@ if(!is.na(education_var)) {
   }
 }
 
-# ============================================================================
+
+
 # ADVANCED ANALYSIS 3: FERTILITY & AGE INTERACTION
-# ============================================================================
-
 cat("\n========== FERTILITY & AGE INTERACTION ==========\n")
-
-# Relationship between women's age and fertility outcome
 if("g1" %in% names(fertility) && 
    ("age" %in% tolower(names(fertility)) || "g0" %in% names(fertility))) {
   
@@ -558,13 +527,10 @@ if("g1" %in% names(fertility) &&
   }
 }
 
-# ============================================================================
+
+
 # ADVANCED ANALYSIS 4: MORTALITY RATE BY AGE GROUP (for deaths)
-# ============================================================================
-
 cat("\n========== MORTALITY ANALYSIS BY AGE ==========\n")
-
-# Create mortality statistics by age group
 age_col_death <- names(death)[tolower(names(death)) %in% c("age", "d2")][1]
 if(!is.na(age_col_death)) {
   
@@ -619,13 +585,9 @@ if(!is.na(age_col_death)) {
   }
 }
 
-# ============================================================================
+
 # ADVANCED ANALYSIS 5: BIRTH ORDER & SURVIVAL ANALYSIS
-# ============================================================================
-
 cat("\n========== BIRTH ORDER & SURVIVAL ANALYSIS ==========\n")
-
-# Analyze relationship between birth order and survival
 if("b1" %in% names(birth) && "b7" %in% names(birth)) {
   
   birth_survival <- birth %>%
@@ -662,13 +624,8 @@ if("b1" %in% names(birth) && "b7" %in% names(birth)) {
   }
 }
 
-# ============================================================================
 # ADVANCED ANALYSIS 6: LIVING VS DEAD CHILDREN BY AGE OF MOTHER
-# ============================================================================
-
 cat("\n========== LIVING CHILDREN ANALYSIS ==========\n")
-
-# Compare living and dead children distribution
 if("g6" %in% names(fertility) && "g7" %in% names(fertility)) {
   
   child_status <- fertility %>%
@@ -704,13 +661,10 @@ if("g6" %in% names(fertility) && "g7" %in% names(fertility)) {
   }
 }
 
-# ============================================================================
+
+
 # ADVANCED ANALYSIS 7: DATA QUALITY ASSESSMENT
-# ============================================================================
-
 cat("\n========== DATA QUALITY ASSESSMENT ==========\n")
-
-# Check missing data patterns
 data_quality <- data.frame(
   Dataset = c("Birth", "Fertility", "Roster", "Death"),
   Total_Records = c(nrow(birth), nrow(fertility), nrow(roster), nrow(death)),
@@ -725,9 +679,7 @@ data_quality <- data.frame(
   mutate(
     Completeness_Pct = round(100 * (1 - Missing_Values / (Total_Records * Total_Variables)), 2)
   )
-
 print(data_quality)
-
 p_data_quality <- ggplot(data_quality, 
                          aes(x = Dataset, y = Completeness_Pct, fill = Dataset)) +
   geom_col(alpha = 0.8, color = "black") +
@@ -746,23 +698,19 @@ p_data_quality <- ggplot(data_quality,
     plot.title = element_text(size = 14, face = "bold"),
     legend.position = "none"
   )
-
 print(p_data_quality)
 ggsave(paste0(output_dir, "23_data_quality_assessment.png"), 
        p_data_quality, width = 10, height = 6)
 cat("✓ Saved: 23_data_quality_assessment.png\n")
-
-# Save data quality summary as .sav file
 write_sav(data_quality, paste0(output_dir, "data_quality_summary.sav"))
 cat("✓ Saved: data_quality_summary.sav\n")
 
-# ============================================================================
-# COMPLETION MESSAGE
-# ============================================================================
 
+
+# COMPLETION MESSAGE
 cat("\n")
 cat("╔════════════════════════════════════════════════════════════╗\n")
-cat("║  ✓ ADVANCED ANALYSIS COMPLETED SUCCESSFULLY!              ║\n")
+cat("║  ✓ ADVANCED ANALYSIS COMPLETED SUCCESSFULLY!               ║\n")
 cat("╚════════════════════════════════════════════════════════════╝\n")
 cat("\n📊 Generated 7 advanced visualizations:\n")
 cat("   - Age pyramid analysis\n")
@@ -774,69 +722,42 @@ cat("   - Living vs dead children\n")
 cat("   - Data quality assessment\n\n")
 cat("📁 All files saved to:", output_dir, "\n")
 
-# ============================================================================
-# ADVANCED 2D GRAPH: MULTIPLE TRENDS IN ONE PLOT
-# Shows: Age at Marriage (X) vs Average Children Born (Y) split by Gender
-# Guaranteed Error-Free & Highly Visible
-# ============================================================================
+
 
 library(haven)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-# 1. Load Data Safely
 fertility <- read_sav("Fertility.sav")
-
-# 2. Data Preparation and Aggregation
 trend_data <- fertility %>%
-  # Convert SPSS variables to numeric to avoid label errors
   mutate(
     age_marriage = as.numeric(AGE_AT_FIRST_MARRIAGE),
     boys = as.numeric(BOYS_BORN_ALIVE),
     girls = as.numeric(GIRLS_BORN_ALIVE)
   ) %>%
-  # Filter for realistic marriage ages (e.g., 14 to 35) to get smooth statistical averages
   filter(!is.na(age_marriage), age_marriage >= 14, age_marriage <= 35,
          !is.na(boys), !is.na(girls)) %>%
-  # Group by the age they were married
   group_by(age_marriage) %>%
-  # Calculate the average boys and girls born to women married at that specific age
   summarise(
     `Average Boys Born` = mean(boys),
     `Average Girls Born` = mean(girls),
     .groups = 'drop'
   ) %>%
-  # Reshape data from wide to long format so we can plot both lines on one 2D graph
   pivot_longer(
     cols = c(`Average Boys Born`, `Average Girls Born`),
     names_to = "Child_Gender",
     values_to = "Average_Count"
   )
-
-# 3. Create the 2D Line & Point Graph
 if(nrow(trend_data) > 0) {
-  
   p_2d <- ggplot(trend_data, aes(x = age_marriage, y = Average_Count, color = Child_Gender, shape = Child_Gender)) +
-    
-    # LAYER 1: Thick trend lines
     geom_line(linewidth = 1.5, alpha = 0.8) +
-    
-    # LAYER 2: Large data points to make exact intersections visible
     geom_point(size = 4, stroke = 1.5, fill = "white") +
-    
-    # LAYER 3: High contrast colors for extreme visibility
     scale_color_manual(values = c("Average Boys Born" = "#2980B9",   # Bold Blue
                                   "Average Girls Born" = "#C0392B")) + # Bold Red
-    
-    # Distinct shapes for accessibility (in case printed in black/white)
     scale_shape_manual(values = c("Average Boys Born" = 21, 
                                   "Average Girls Born" = 24)) +
-    
-    # Add breaks to X-axis so every single age year is clearly marked
     scale_x_continuous(breaks = seq(14, 35, by = 2)) +
-    
-    # Clear labels
     labs(
       title = "Fertility Trends: Average Children Born by Marriage Age",
       subtitle = "Comparing Boys vs Girls born to mothers based on when they married",
@@ -845,38 +766,24 @@ if(nrow(trend_data) > 0) {
       color = "Child Category",
       shape = "Child Category"
     ) +
-    
-    # Clean, High-Visibility Theme
     theme_minimal(base_size = 15) +
     theme(
-      # Title and subtitle formatting
       plot.title = element_text(face = "bold", size = 20, color = "black", hjust = 0.5, margin = margin(b = 8)),
       plot.subtitle = element_text(size = 14, color = "grey30", hjust = 0.5, margin = margin(b = 20)),
-      
-      # Axis formatting (Large and bold)
       axis.title.x = element_text(face = "bold", size = 16, color = "black", margin = margin(t = 15)),
       axis.title.y = element_text(face = "bold", size = 16, color = "black", margin = margin(r = 15)),
       axis.text = element_text(size = 13, color = "black", face = "bold"),
-      
-      # Grid line styling (Subtle but present for easy reading)
       panel.grid.major = element_line(color = "grey80", linewidth = 0.6),
       panel.grid.minor = element_line(color = "grey92", linewidth = 0.3),
-      
-      # Legend formatting (Placed nicely at the top)
       legend.position = "top",
       legend.title = element_text(face = "bold", size = 14),
       legend.text = element_text(size = 13),
       legend.background = element_rect(fill = "white", color = "black", linewidth = 0.5),
       legend.margin = margin(t = 5, b = 5, r = 10, l = 10),
-      
-      # Background styling
       plot.background = element_rect(fill = "white", color = NA)
     )
-  
-  # 4. Save the plot
   ggsave("29_Clear_2D_Trend_Graph.png", p_2d, width = 11, height = 7, dpi = 300)
   cat("\n✓ SUCCESS: Graph '29_Clear_2D_Trend_Graph.png' generated perfectly!\n")
-  
 } else {
   cat("\n! ERROR: No valid data available for plotting.\n")
 }
